@@ -20,6 +20,9 @@ spec:
         image: tylere431/hanayo:latest
         ports:
         - containerPort: 80
+        envFrom:
+        - secretRef:
+            name: osu-speedrun-secrets
         env:
         - name: APP_COMPONENT
           value: api

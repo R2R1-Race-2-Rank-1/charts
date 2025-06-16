@@ -20,6 +20,12 @@ spec:
         image: tylere431/bancho-service:latest
         ports:
         - containerPort: 80
+        envFrom:
+        - secretRef:
+            name: osu-speedrun-secrets
+        env:
+        - name: APP_COMPONENT
+          value: api
         readinessProbe:
           httpGet:
             path: /_health
@@ -36,9 +42,6 @@ spec:
           requests:
             cpu: "200m"
             memory: "250Mi"
-        env:
-        - name: APP_COMPONENT
-          value: api
 
 --- 
 apiVersion: v1
@@ -95,6 +98,12 @@ spec:
         image: tylere431/bancho-service:latest
         ports:
         - containerPort: 80
+        envFrom:
+        - secretRef:
+            name: osu-speedrun-secrets
+        env:
+        - name: APP_COMPONENT
+          value: reset-all-tokens-spam-rate
         resources:
           limits:
             cpu: "200m"
@@ -102,9 +111,6 @@ spec:
           requests:
             cpu: "75m"
             memory: "75Mi"
-        env:
-        - name: APP_COMPONENT
-          value: reset-all-tokens-spam-rate
 
 --- 
 apiVersion: apps/v1
@@ -128,6 +134,12 @@ spec:
         image: tylere431/bancho-service:latest
         ports:
         - containerPort: 80
+        envFrom:
+        - secretRef:
+            name: osu-speedrun-secrets
+        env:
+        - name: APP_COMPONENT
+          value: timeout-inactive-tokens
         resources:
           limits:
             cpu: "200m"
@@ -135,9 +147,6 @@ spec:
           requests:
             cpu: "75m"
             memory: "75Mi"
-        env:
-        - name: APP_COMPONENT
-          value: timeout-inactive-tokens
 
 --- 
 apiVersion: apps/v1
@@ -161,6 +170,12 @@ spec:
         image: tylere431/bancho-service:latest
         ports:
         - containerPort: 80
+        envFrom:
+        - secretRef:
+            name: osu-speedrun-secrets
+        env:
+        - name: APP_COMPONENT
+          value: consume-pubsub-events
         resources:
           limits:
             cpu: "200m"
@@ -168,9 +183,6 @@ spec:
           requests:
             cpu: "75m"
             memory: "75Mi"
-        env:
-        - name: APP_COMPONENT
-          value: consume-pubsub-events
 
 --- 
 apiVersion: apps/v1
@@ -194,6 +206,12 @@ spec:
         image: tylere431/bancho-service:latest
         ports:
         - containerPort: 80
+        envFrom:
+        - secretRef:
+            name: osu-speedrun-secrets
+        env:
+        - name: APP_COMPONENT
+          value: trim-outdated-streams
         resources:
           limits:
             cpu: "200m"
@@ -201,6 +219,3 @@ spec:
           requests:
             cpu: "75m"
             memory: "75Mi"
-        env:
-        - name: APP_COMPONENT
-          value: trim-outdated-streams
