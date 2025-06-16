@@ -1,0 +1,116 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: db  # This is the primary service, used by other containers
+spec:
+  ports:
+    - port: 3306
+  clusterIP: None
+  selector:
+    app: db
+    role: primary  # Ensures this service only targets the primary pod
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: db-replica
+spec:
+  ports:
+    - port: 3306
+  selector:
+    app: db
+    role: replica
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: db
+spec:
+  serviceName: "db-replica"  # For replica communication
+  replicas: 1  # Number of replicas
+  selector:
+    matchLabels:
+      app: db
+  template:
+    metadata:
+      labels:
+        app: db
+        role: replica
+    spec:
+      containers:
+        - name: db
+          image: tylere431/database:latest
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: osu-speedrun-secrets
+                  key: DB_PASS
+            - name: MYSQL_REPLICATION_MODE
+              value: "replica"
+            - name: MYSQL_PRIMARY_HOST
+              value: "db"
+          ports:
+            - containerPort: 3306
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "500m"
+          volumeMounts:
+            - name: mysql-data
+              mountPath: /var/lib/mysql
+  volumeClaimTemplates:
+    - metadata:
+        name: mysql-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 10Gi
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mysql-primary
+spec:
+  serviceName: "db"  # Primary will be exposed through the `db` service
+  replicas: 1
+  selector:
+    matchLabels:
+      app: db
+      role: primary
+  template:
+    metadata:
+      labels:
+        app: db
+        role: primary
+    spec:
+      containers:
+        - name: db
+          image: image.tiller.pw/dev/db:latest
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: osu-speedrun-secrets
+                  key: DB_PASS
+            - name: MYSQL_REPLICATION_MODE
+              value: "primary"
+          ports:
+            - containerPort: 3306
+          resources:
+            requests:
+              memory: "1024Mi"
+              cpu: "500m"
+          volumeMounts:
+            - name: mysql-data
+              mountPath: /var/lib/mysql
+  volumeClaimTemplates:
+    - metadata:
+        name: mysql-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 10Gi

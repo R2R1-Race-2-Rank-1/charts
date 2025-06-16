@@ -1,0 +1,206 @@
+--- 
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bancho-service-api
+  labels:
+    app: bancho-service-api
+spec:
+  replicas: 2  # Using autoscaling minReplicas as the starting replica count
+  selector:
+    matchLabels:
+      app: bancho-service-api
+  template:
+    metadata:
+      labels:
+        app: bancho-service-api
+    spec:
+      containers:
+      - name: bancho-service-api
+        image: tylere431/bancho-service:latest
+        ports:
+        - containerPort: 80
+        readinessProbe:
+          httpGet:
+            path: /_health
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 3
+          successThreshold: 1
+          failureThreshold: 3
+        resources:
+          limits:
+            cpu: "1000m"
+            memory: "350Mi"
+          requests:
+            cpu: "200m"
+            memory: "250Mi"
+        env:
+        - name: APP_COMPONENT
+          value: api
+
+--- 
+apiVersion: v1
+kind: Service
+metadata:
+  name: bancho-service-api
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 80
+  selector:
+    app: bancho-service-api
+
+--- 
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: bancho-service-api
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: bancho-service-api
+  minReplicas: 2
+  maxReplicas: 6
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+
+--- 
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bancho-service-spam-protection-cronjob
+  labels:
+    app: bancho-service-spam-protection-cronjob
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bancho-service-spam-protection-cronjob
+  template:
+    metadata:
+      labels:
+        app: bancho-service-spam-protection-cronjob
+    spec:
+      containers:
+      - name: bancho-service-spam-protection-cronjob
+        image: tylere431/bancho-service:latest
+        ports:
+        - containerPort: 80
+        resources:
+          limits:
+            cpu: "200m"
+            memory: "200Mi"
+          requests:
+            cpu: "75m"
+            memory: "75Mi"
+        env:
+        - name: APP_COMPONENT
+          value: reset-all-tokens-spam-rate
+
+--- 
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bancho-service-inactivity-timeout-cronjob
+  labels:
+    app: bancho-service-inactivity-timeout-cronjob
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bancho-service-inactivity-timeout-cronjob
+  template:
+    metadata:
+      labels:
+        app: bancho-service-inactivity-timeout-cronjob
+    spec:
+      containers:
+      - name: bancho-service-inactivity-timeout-cronjob
+        image: tylere431/bancho-service:latest
+        ports:
+        - containerPort: 80
+        resources:
+          limits:
+            cpu: "200m"
+            memory: "200Mi"
+          requests:
+            cpu: "75m"
+            memory: "75Mi"
+        env:
+        - name: APP_COMPONENT
+          value: timeout-inactive-tokens
+
+--- 
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bancho-service-consume-pubsub-events-daemon
+  labels:
+    app: bancho-service-consume-pubsub-events-daemon
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bancho-service-consume-pubsub-events-daemon
+  template:
+    metadata:
+      labels:
+        app: bancho-service-consume-pubsub-events-daemon
+    spec:
+      containers:
+      - name: bancho-service-consume-pubsub-events-daemon
+        image: tylere431/bancho-service:latest
+        ports:
+        - containerPort: 80
+        resources:
+          limits:
+            cpu: "200m"
+            memory: "200Mi"
+          requests:
+            cpu: "75m"
+            memory: "75Mi"
+        env:
+        - name: APP_COMPONENT
+          value: consume-pubsub-events
+
+--- 
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bancho-service-trim-outdated-streams-daemon
+  labels:
+    app: bancho-service-trim-outdated-streams-daemon
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bancho-service-trim-outdated-streams-daemon
+  template:
+    metadata:
+      labels:
+        app: bancho-service-trim-outdated-streams-daemon
+    spec:
+      containers:
+      - name: bancho-service-trim-outdated-streams-daemon
+        image: tylere431/bancho-service:latest
+        ports:
+        - containerPort: 80
+        resources:
+          limits:
+            cpu: "200m"
+            memory: "200Mi"
+          requests:
+            cpu: "75m"
+            memory: "75Mi"
+        env:
+        - name: APP_COMPONENT
+          value: trim-outdated-streams
