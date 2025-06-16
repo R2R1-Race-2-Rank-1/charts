@@ -2,21 +2,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: hanayo-api
+  name: hanayo
   labels:
-    app: hanayo-api
+    app: hanayo
 spec:
   replicas: 1  # initial replica count, matching autoscaling minReplicas
   selector:
     matchLabels:
-      app: hanayo-api
+      app: hanayo
   template:
     metadata:
       labels:
-        app: hanayo-api
+        app: hanayo
     spec:
       containers:
-      - name: hanayo-api
+      - name: hanayo
         image: tylere431/hanayo:latest
         ports:
         - containerPort: 80
@@ -38,7 +38,7 @@ spec:
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: hanayo-api
+  name: hanayo
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
