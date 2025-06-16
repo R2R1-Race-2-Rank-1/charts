@@ -88,7 +88,7 @@ spec:
     spec:
       containers:
         - name: db
-          image: image.tiller.pw/dev/db:latest
+          image: tylere431/database:latest
           env:
             - name: MYSQL_ROOT_PASSWORD
               valueFrom:
