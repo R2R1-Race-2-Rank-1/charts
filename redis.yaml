@@ -21,7 +21,7 @@ metadata:
     app: redis
 spec:
   serviceName: "redis"
-  replicas: 3  # You can scale this number as needed.
+  replicas: 1  # Single instance for now
   selector:
     matchLabels:
       app: redis
@@ -39,14 +39,9 @@ spec:
             - "yes"
             - "--requirepass"
             - "$(REDIS_PASS)"
-            - "--cluster-enabled"
-            - "yes"
-            - "--cluster-config-file"
-            - "/data/nodes.conf"
-            - "--cluster-node-timeout"
-            - "5000"
             - "--protected-mode"
             - "no"
+            # Removed cluster-specific args
           env:
             - name: REDIS_PASS
               valueFrom:
