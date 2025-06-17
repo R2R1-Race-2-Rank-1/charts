@@ -1,0 +1,183 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: web-ingress
+  annotations:
+    kubernetes.io/ingress.class: "nginx"  # Specify which controller to use
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"  # Set to true once TLS is configured
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    # Logging annotations
+    nginx.ingress.kubernetes.io/enable-access-log: "true"
+    nginx.ingress.kubernetes.io/enable-rewrite-log: "true"
+    nginx.ingress.kubernetes.io/log-format-upstream: '$remote_addr - $remote_user [$time_local] "$request" $status $body_bytes_sent "$http_referer" "$http_user_agent" $request_length $request_time [$proxy_upstream_name] [$proxy_alternative_upstream_name] $upstream_addr $upstream_response_length $upstream_response_time $upstream_status $req_id'
+spec:
+  # tls:
+  #   - hosts:
+  #       - "ce.r2r1.world"
+  #       - "c1.r2r1.world"
+  #       - "c2.r2r1.world"
+  #       - "c3.r2r1.world"
+  #       - "c4.r2r1.world"
+  #       - "c.r2r1.world"
+  #       - "r2r1.world"
+  #       - "old.r2r1.world"
+  #       - "a.r2r1.world"
+  #       - "redep.r2r1.world"
+  #     secretName: tls-secret  # Assuming you have a TLS secret for SSL
+  rules:
+    # Bancho server routes
+    - host: "ce.r2r1.world"
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: bancho-service-api
+                port:
+                  number: 80
+
+    - host: "c1.r2r1.world"
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: bancho-service-api
+                port:
+                  number: 80
+
+    - host: "c2.r2r1.world"
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: bancho-service-api
+                port:
+                  number: 80
+
+    - host: "c3.r2r1.world"
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: bancho-service-api
+                port:
+                  number: 80
+
+    - host: "c4.r2r1.world"
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: bancho-service-api
+                port:
+                  number: 80
+
+    - host: "c.r2r1.world"
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: bancho-service-api
+                port:
+                  number: 80
+
+    # Hanayo frontend
+    - host: "r2r1.world"
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: hanayo
+                port:
+                  number: 80
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: hanayo
+                port:
+                  number: 80
+          - path: /web
+            pathType: Prefix
+            backend:
+              service:
+                name: score-service
+                port:
+                  number: 80
+          - path: /ss
+            pathType: Prefix
+            backend:
+              service:
+                name: score-service
+                port:
+                  number: 80
+
+    # Hanayo frontend
+    - host: "osu.r2r1.world"
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: hanayo
+                port:
+                  number: 80
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: hanayo
+                port:
+                  number: 80
+          - path: /web
+            pathType: Prefix
+            backend:
+              service:
+                name: score-service
+                port:
+                  number: 80
+          - path: /ss
+            pathType: Prefix
+            backend:
+              service:
+                name: score-service
+                port:
+                  number: 80
+    # Old web frontend and PHP backend
+    - host: "old.r2r1.world"
+      http:
+        paths:
+          - path: /letsapi
+            pathType: Prefix
+            backend:
+              service:
+                name: score-service
+                port:
+                  number: 80
+
+    # Avatar server
+    - host: "a.r2r1.world"
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: avatar-server
+                port:
+                  number: 80
+                  

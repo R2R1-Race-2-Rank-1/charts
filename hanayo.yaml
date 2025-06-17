@@ -26,6 +26,11 @@ spec:
         env:
         - name: APP_COMPONENT
           value: api
+        
+        volumeMounts:
+        - name: avatars-storage
+          mountPath: /avatars
+        
         resources:
           limits:
             cpu: "300m"
@@ -33,6 +38,11 @@ spec:
           requests:
             cpu: "100m"
             memory: "150Mi"
+      
+      volumes:
+      - name: avatars-storage
+        persistentVolumeClaim:
+          claimName: avatars-pvc
 
 --- 
 apiVersion: autoscaling/v2

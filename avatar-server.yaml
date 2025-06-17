@@ -1,0 +1,239 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: avatar-server-nginx-config
+  namespace: default
+data:
+  nginx.conf: |
+    events {
+        worker_connections 1024;
+    }
+    
+    http {
+        include       /etc/nginx/mime.types;
+        default_type  application/octet-stream;
+        
+        # Logging
+        log_format main '$remote_addr - $remote_user [$time_local] "$request" '
+                       '$status $body_bytes_sent "$http_referer" '
+                       '"$http_user_agent" "$http_x_forwarded_for"';
+        
+        access_log /var/log/nginx/access.log main;
+        error_log /var/log/nginx/error.log;
+        
+        # Basic settings
+        sendfile on;
+        tcp_nopush on;
+        tcp_nodelay on;
+        keepalive_timeout 65;
+        types_hash_max_size 2048;
+        
+        # Gzip compression
+        gzip on;
+        gzip_vary on;
+        gzip_min_length 1024;
+        gzip_proxied any;
+        gzip_comp_level 6;
+        gzip_types
+            text/plain
+            text/css
+            text/xml
+            text/javascript
+            application/json
+            application/javascript
+            application/xml+rss
+            application/atom+xml
+            image/svg+xml;
+        
+        server {
+            listen 80;
+            server_name _;
+            
+            # Set cache headers for avatars (1 hour)
+            location / {
+                root /avatars;
+                
+                # Try to serve the requested file, fallback to 0.png (default avatar)
+                try_files /$uri.png /0.png;
+                
+                # Cache control
+                expires 1h;
+                add_header Cache-Control "public, immutable";
+                
+                # Security headers
+                add_header X-Content-Type-Options nosniff;
+                add_header X-Frame-Options DENY;
+                add_header X-XSS-Protection "1; mode=block";
+                
+                # CORS headers for avatars
+                add_header Access-Control-Allow-Origin "*";
+                add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+                add_header Access-Control-Allow-Headers "Origin, X-Requested-With, Content-Type, Accept";
+                
+                # Handle OPTIONS requests
+                if ($request_method = 'OPTIONS') {
+                    add_header Access-Control-Allow-Origin "*";
+                    add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+                    add_header Access-Control-Allow-Headers "Origin, X-Requested-With, Content-Type, Accept";
+                    add_header Access-Control-Max-Age 86400;
+                    add_header Content-Type "text/plain charset=UTF-8";
+                    add_header Content-Length 0;
+                    return 204;
+                }
+            }
+            
+            # Health check endpoint
+            location /_health {
+                access_log off;
+                return 200 "healthy\n";
+                add_header Content-Type text/plain;
+            }
+        }
+    }
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: avatar-server
+  namespace: default
+  labels:
+    app: avatar-server
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app: avatar-server
+  template:
+    metadata:
+      labels:
+        app: avatar-server
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.25-alpine
+        ports:
+        - containerPort: 80
+          name: http
+          protocol: TCP
+        
+        volumeMounts:
+        - name: nginx-config
+          mountPath: /etc/nginx/nginx.conf
+          subPath: nginx.conf
+          readOnly: true
+        - name: avatars-storage
+          mountPath: /avatars
+          readOnly: true
+        
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "200m"
+        
+        livenessProbe:
+          httpGet:
+            path: /_health
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+        
+        readinessProbe:
+          httpGet:
+            path: /_health
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 3
+      
+      volumes:
+      - name: nginx-config
+        configMap:
+          name: avatar-server-nginx-config
+      - name: avatars-storage
+        persistentVolumeClaim:
+          claimName: avatars-pvc
+      
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - avatar-server
+              topologyKey: kubernetes.io/hostname
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: avatar-server
+  namespace: default
+  labels:
+    app: avatar-server
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 80
+    protocol: TCP
+    name: http
+  selector:
+    app: avatar-server
+
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: avatar-server-hpa
+  namespace: default
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: avatar-server
+  minReplicas: 2
+  maxReplicas: 5
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: avatars-pvc
+  namespace: default
+spec:
+  accessModes:
+    - ReadWriteMany  # Multiple pods can read/write
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: local-path  # Adjust based on your storage class
