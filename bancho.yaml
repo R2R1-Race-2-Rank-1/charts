@@ -6,7 +6,8 @@ metadata:
   labels:
     app: bancho-service-api
 spec:
-  replicas: 2  # Using autoscaling minReplicas as the starting replica count
+  # Using autoscaling minReplicas as the starting replica count
+  replicas: 2
   selector:
     matchLabels:
       app: bancho-service-api
@@ -15,6 +16,18 @@ spec:
       labels:
         app: bancho-service-api
     spec:
+      initContainers:
+      - name: wait-for-rabbitmq
+        image: busybox:1.35
+        command: ['sh', '-c']
+        args:
+        - |
+          echo "Waiting for RabbitMQ to be ready..."
+          until nc -z rabbitmq.default.svc.cluster.local 5672; do
+            echo "RabbitMQ is not ready yet, waiting..."
+            sleep 5
+          done
+          echo "RabbitMQ is ready!"
       containers:
       - name: bancho-service-api
         image: tylere431/bancho-service:latest
