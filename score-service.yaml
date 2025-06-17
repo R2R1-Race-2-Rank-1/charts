@@ -226,7 +226,7 @@ spec:
   - to:
     - podSelector:
         matchLabels:
-          app: database
+          app: db
     ports:
     - protocol: TCP
       port: 3306
