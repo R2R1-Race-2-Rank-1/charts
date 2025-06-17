@@ -24,7 +24,7 @@ spec:
     type: RollingUpdate
     rollingUpdate:
       maxUnavailable: 1
-      maxSurge: 1
+      maxSurge: 1  
   selector:
     matchLabels:
       app: score-service
@@ -37,7 +37,7 @@ spec:
     spec:
       containers:
       - name: score-service
-        image: score-service:latest
+        image: tylere431/score-service:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 7000
