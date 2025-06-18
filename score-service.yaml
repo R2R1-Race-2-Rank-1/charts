@@ -5,7 +5,6 @@ metadata:
   name: score-service-config
   namespace: default
 data:
-  APP_PORT: "7000"
   BEATMAPS_SERVICE_BASE_URL: "https://beatmaps.akatsuki.gg"
   PERFORMANCE_SERVICE_URL: "https://performance.akatsuki.gg"
 
@@ -40,7 +39,7 @@ spec:
         image: tylere431/score-service:latest
         imagePullPolicy: Always
         ports:
-        - containerPort: 7000
+        - containerPort: 80
           name: http
           protocol: TCP
         
@@ -63,7 +62,7 @@ spec:
         livenessProbe:
           httpGet:
             path: /_health
-            port: 7000
+            port: 80
           initialDelaySeconds: 30
           periodSeconds: 10
           timeoutSeconds: 5
@@ -72,7 +71,7 @@ spec:
         readinessProbe:
           httpGet:
             path: /_health
-            port: 7000
+            port: 80
           initialDelaySeconds: 5
           periodSeconds: 5
           timeoutSeconds: 3
@@ -81,7 +80,7 @@ spec:
         startupProbe:
           httpGet:
             path: /_health
-            port: 7000
+            port: 80
           initialDelaySeconds: 10
           periodSeconds: 10
           timeoutSeconds: 5
@@ -113,7 +112,7 @@ spec:
   type: ClusterIP
   ports:
   - port: 80
-    targetPort: 7000
+    targetPort: 80
     protocol: TCP
     name: http
   selector:
@@ -133,8 +132,8 @@ spec:
   type: ClusterIP
   clusterIP: None
   ports:
-  - port: 7000
-    targetPort: 7000
+  - port: 80
+    targetPort: 80
     protocol: TCP
     name: http
   selector:
@@ -221,7 +220,7 @@ spec:
           app: nginx-ingress
     ports:
     - protocol: TCP
-      port: 7000
+      port: 80
   egress:
   - to:
     - podSelector:
