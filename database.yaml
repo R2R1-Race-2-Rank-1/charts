@@ -40,7 +40,7 @@ spec:
     spec:
       containers:
         - name: db
-          image: tylere431/database:latest
+          image: mysql:8.0  # Use the official MySQL image
           env:
             - name: MYSQL_ROOT_PASSWORD
               valueFrom:
@@ -89,7 +89,7 @@ spec:
     spec:
       containers:
         - name: db
-          image: tylere431/database:latest
+          image: mysql:8.0  # Use the official MySQL image
           env:
             - name: MYSQL_ROOT_PASSWORD
               valueFrom:
