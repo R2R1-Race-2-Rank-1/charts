@@ -101,12 +101,9 @@ metadata:
   labels:
     app: avatar-server
 spec:
-  replicas: 2
+  replicas: 1  # Single replica due to ReadWriteOnce limitation
   strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxUnavailable: 1
-      maxSurge: 1
+    type: Recreate  # Recreate strategy for ReadWriteOnce volumes
   selector:
     matchLabels:
       app: avatar-server
@@ -208,8 +205,8 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: avatar-server
-  minReplicas: 2
-  maxReplicas: 5
+  minReplicas: 1  # Single replica due to ReadWriteOnce volume
+  maxReplicas: 1  # Cannot scale beyond 1 with ReadWriteOnce
   metrics:
   - type: Resource
     resource:
@@ -232,7 +229,7 @@ metadata:
   namespace: default
 spec:
   accessModes:
-    - ReadWriteMany  # Multiple pods can read/write
+    - ReadWriteOnce  # Single pod can read/write (local-path limitation)
   resources:
     requests:
       storage: 10Gi
