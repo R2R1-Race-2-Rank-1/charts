@@ -110,13 +110,6 @@ spec:
                 name: web-api
                 port:
                   number: 80
-          - path: /web/bancho_connect.php
-            pathType: Exact
-            backend:
-              service:
-                name: bancho-service-api
-                port:
-                  number: 80
           - path: /web
             pathType: Prefix
             backend:
@@ -148,13 +141,6 @@ spec:
             backend:
               service:
                 name: web-api
-                port:
-                  number: 80
-          - path: /web/bancho_connect.php
-            pathType: Exact
-            backend:
-              service:
-                name: bancho-service-api
                 port:
                   number: 80
           - path: /web
