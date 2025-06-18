@@ -107,7 +107,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: hanayo
+                name: web-api
                 port:
                   number: 80
           - path: /web
@@ -140,7 +140,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: hanayo
+                name: web-api
                 port:
                   number: 80
           - path: /web
