@@ -40,7 +40,7 @@ spec:
     spec:
       containers:
         - name: db
-          image: mysql:8.0-debian  # Use the official MySQL image
+          image: tylere431/database:latest
           env:
             - name: MYSQL_ROOT_PASSWORD
               valueFrom:
@@ -89,18 +89,13 @@ spec:
     spec:
       containers:
         - name: db
-          image: mysql:8.0-debian  # Use the official MySQL image
+          image: tylere431/database:latest
           env:
             - name: MYSQL_ROOT_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: osu-speedrun-secrets
                   key: DB_PASS
-            - name: MYSQL_DATABASE
-              valueFrom:
-                secretKeyRef:
-                  name: osu-speedrun-secrets
-                  key: DB_NAME
             - name: MYSQL_REPLICATION_MODE
               value: "primary"
           ports:
