@@ -29,7 +29,7 @@ spec:
           value: api
         volumeMounts:
         - name: filters-config
-          mountPath: /srv/root/filters.txt
+          mountPath: /pep.py/filters
           subPath: filters.txt
           readOnly: true
         resources:
