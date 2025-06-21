@@ -27,6 +27,11 @@ spec:
         env:
         - name: APP_COMPONENT
           value: api
+        volumeMounts:
+        - name: filters-config
+          mountPath: /srv/root/filters.txt
+          subPath: filters.txt
+          readOnly: true
         resources:
           limits:
             cpu: "1000m"
@@ -34,6 +39,10 @@ spec:
           requests:
             cpu: "200m"
             memory: "250Mi"
+      volumes:
+      - name: filters-config
+        configMap:
+          name: bancho-filters
 
 --- 
 apiVersion: v1
