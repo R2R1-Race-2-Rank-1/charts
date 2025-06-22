@@ -68,7 +68,7 @@ spec:
     kind: Deployment
     name: bancho-service-api
   minReplicas: 2
-  maxReplicas: 6
+  maxReplicas: 12
   metrics:
   - type: Resource
     resource:
