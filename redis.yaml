@@ -1,27 +1,9 @@
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: redis
-  labels:
-    app: redis
-spec:
-  clusterIP: None
-  ports:
-    - port: 6379
-      name: redis
-  selector:
-    app: redis
----
 apiVersion: apps/v1
-kind: StatefulSet
+kind: Deployment
 metadata:
   name: redis
-  labels:
-    app: redis
 spec:
-  serviceName: "redis"
-  replicas: 1  # Single instance for now
+  replicas: 1
   selector:
     matchLabels:
       app: redis
@@ -32,33 +14,29 @@ spec:
     spec:
       containers:
         - name: redis
-          image: redis:7.0
-          command: ["redis-server"]
-          args:
-            - "--appendonly"
-            - "yes"
-            - "--requirepass"
-            - "$(REDIS_PASS)"
-            - "--protected-mode"
-            - "no"
-            # Removed cluster-specific args
-          env:
-            - name: REDIS_PASS
-              valueFrom:
-                secretKeyRef:
-                  name: osu-speedrun-secrets
-                  key: REDIS_PASS
+          image: redis:latest
+          volumeMounts:
+            - mountPath: /data
+              name: redis-data
           ports:
             - containerPort: 6379
-          volumeMounts:
-            - name: redis-data
-              mountPath: /data
-  volumeClaimTemplates:
-    - metadata:
-        name: redis-data
-      spec:
-        storageClassName: local-path
-        accessModes: [ "ReadWriteOnce" ]
-        resources:
-          requests:
-            storage: 1Gi
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+      volumes:
+        - name: redis-data
+          persistentVolumeClaim:
+            claimName: redis-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+spec:
+  type: ClusterIP
+  ports:
+    - port: 6379
+      targetPort: 6379
+  selector:
+    app: redis
