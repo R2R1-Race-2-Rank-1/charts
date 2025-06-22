@@ -6,8 +6,11 @@ metadata:
   labels:
     app: bancho-service-api
 spec:
-
+  # Using autoscaling minReplicas as the starting replica count
   replicas: 1
+  selector:
+    matchLabels:
+      app: bancho-service-api
   template:
     metadata:
       labels:
