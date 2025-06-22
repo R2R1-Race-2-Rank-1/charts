@@ -34,9 +34,6 @@ spec:
           protocol: TCP
         
         envFrom:
-        # Mount all config from ConfigMap
-        - configMapRef:
-            name: score-service-config
         # Mount all secrets as environment variables
         - secretRef:
             name: osu-speedrun-secrets
